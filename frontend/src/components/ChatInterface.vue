@@ -10,13 +10,62 @@ const props = defineProps({
     default: 'sse'
   }
 })
-// ... (keep MarkdownIt setup) ...
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  typographer: true,
+  highlight: function (str, lang) {
+    if (lang && highlightjs.getLanguage(lang)) {
+      try {
+        return highlightjs.highlight(str, { language: lang }).value
+      } catch (__) {}
+    }
+    return ''
+  }
+})
 
 // State
 const messages = ref([])
-// ... (keep state) ...
+const input = ref('')
+const isLoading = ref(false)
+const messagesContainer = ref(null)
+const files = ref([])
+const fileInput = ref(null)
 
-// ... (keep helper functions) ...
+const scrollToBottom = async () => {
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+watch(messages, () => {
+  scrollToBottom()
+}, { deep: true })
+
+// Helper: Convert File to Base64
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = error => reject(error)
+  })
+}
+
+const handleFileChange = (e) => {
+  if (e.target.files) {
+    files.value = Array.from(e.target.files)
+  }
+}
+
+const triggerFileInput = () => {
+  fileInput.value?.click()
+}
+
+const removeFile = (index) => {
+  files.value.splice(index, 1)
+}
 
 const handleCustomSubmit = async () => {
   if ((!input.value.trim() && files.value.length === 0) || isLoading.value) return
@@ -31,8 +80,6 @@ const handleCustomSubmit = async () => {
 
   isLoading.value = true
 
-  // ... (keep message construction logic) ... 
-  
   // Construct User Message & History (same as before)
   let userContent = userText
   if (attachedFiles.length > 0) {
@@ -182,7 +229,6 @@ const handleCustomSubmit = async () => {
         </div>
         
         <div class="message-bubble">
-          <div class="role-name">{{ m.role === 'user' ? 'You' : 'Assistant' }}</div>
           
           <!-- Local Attachments Display -->
           <div v-if="m.experimental_attachments?.length" class="message-attachments">

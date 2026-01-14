@@ -34,8 +34,11 @@ import ChatInterface from './components/ChatInterface.vue'
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
-body {
+body, html {
   margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Prevent page-level scroll */
   background-color: var(--bg-color);
   color: var(--text-primary);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -45,12 +48,14 @@ body {
 .chat-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - 2rem);
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 1rem auto;
   background: var(--bg-color);
   position: relative;
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .chat-header {
